@@ -5,6 +5,10 @@ package wtgo
 // #include <stdlib.h>
 import "C"
 
+import (
+	"unsafe"
+)
+
 type WTError struct {
 	code C.int
 }

@@ -7,18 +7,28 @@ package wtgo
 
 int wt_session_close(WT_SESSION* sess,
                      const char* config) {
-    return sess->close(conn, config);
+    return sess->close(sess, config);
 }
 
 int wt_session_open_cursor(WT_SESSION* sess,
                            const char* uri,
                            WT_CURSOR* to_dup,
                            const char* config,
-                           WT_CURSOR** cursorp) {
-    return sesss->open_cursor(session, uri, to_dup, config, cursorp);
+                           struct __wt_cursor** cursorp) {
+    return sess->open_cursor(sess, uri, to_dup, config, cursorp);
+}
+
+int wt_session_create(WT_SESSION* sess,
+                      const char* name,
+                      const char* config) {
+    return sess->create(sess, name, config);
 }
 */
 import "C"
+
+import (
+	"unsafe"
+)
 
 type Session struct {
 	WTSession *C.WT_SESSION
@@ -34,7 +44,7 @@ func (s *Session) Close() error {
 
 func (s *Session) OpenCursor(uri, config string) (*Cursor, error) {
 	wturi := C.CString(uri)
-	wtconfig := C.Cstring(config)
+	wtconfig := C.CString(config)
 
 	defer C.free(unsafe.Pointer(wturi))
 	defer C.free(unsafe.Pointer(wtconfig))
@@ -45,5 +55,19 @@ func (s *Session) OpenCursor(uri, config string) (*Cursor, error) {
 	if wterr != 0 {
 		return nil, &WTError{wterr}
 	}
-	return &Cursor{wtsess}, nil
+	return &Cursor{wtcursor}, nil
+}
+
+func (s *Session) Create(name, config string) error {
+	wtname := C.CString(name)
+	wtconfig := C.CString(config)
+
+	defer C.free(unsafe.Pointer(wtname))
+	defer C.free(unsafe.Pointer(wtconfig))
+
+	wterr := C.wt_session_create(s.WTSession, wtname, wtconfig)
+	if wterr != 0 {
+		return &WTError{wterr}
+	}
+	return nil
 }
