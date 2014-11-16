@@ -23,6 +23,21 @@ int wt_session_create(WT_SESSION* sess,
                       const char* config) {
     return sess->create(sess, name, config);
 }
+
+int wt_session_begin_transaction(WT_SESSION* sess,
+                                 const char* config) {
+    return sess->begin_transaction(sess, config);
+}
+
+int wt_session_commit_transaction(WT_SESSION* sess,
+                                  const char* config) {
+    return sess->commit_transaction(sess, config);
+}
+
+int wt_session_rollback_transaction(WT_SESSION* sess,
+                                    const char* config) {
+    return sess->rollback_transaction(sess, config);
+}
 */
 import "C"
 
@@ -66,6 +81,42 @@ func (s *Session) Create(name, config string) error {
 	defer C.free(unsafe.Pointer(wtconfig))
 
 	wterr := C.wt_session_create(s.WTSession, wtname, wtconfig)
+	if wterr != 0 {
+		return &WTError{wterr}
+	}
+	return nil
+}
+
+func (s *Session) BeginTransaction(config string) error {
+	wtconfig := C.CString(config)
+
+	defer C.free(unsafe.Pointer(wtconfig))
+
+	wterr := C.wt_session_begin_transaction(s.WTSession, wtconfig)
+	if wterr != 0 {
+		return &WTError{wterr}
+	}
+	return nil
+}
+
+func (s *Session) CommitTransaction(config string) error {
+	wtconfig := C.CString(config)
+
+	defer C.free(unsafe.Pointer(wtconfig))
+
+	wterr := C.wt_session_commit_transaction(s.WTSession, wtconfig)
+	if wterr != 0 {
+		return &WTError{wterr}
+	}
+	return nil
+}
+
+func (s *Session) RollbackTransaction(config string) error {
+	wtconfig := C.CString(config)
+
+	defer C.free(unsafe.Pointer(wtconfig))
+
+	wterr := C.wt_session_rollback_transaction(s.WTSession, wtconfig)
 	if wterr != 0 {
 		return &WTError{wterr}
 	}
