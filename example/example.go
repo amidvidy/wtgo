@@ -30,10 +30,7 @@ func main() {
 		panic(fmt.Sprintf("Failed to insert: %v", err.Error()))
 	}
 	cursor.Reset()
-	for {
-		if cursor.Next() != nil {
-			break
-		}
+	for cursor.Next() == nil {
 		key, err := cursor.GetKey()
 		if err != nil {
 			panic(fmt.Sprintf("Failed to get key: %v", err.Error()))
